@@ -1,5 +1,6 @@
-package challenge.alura.foro.challenge.alura.foro.infra.security;
+package challenge.alura.foro.challenge.alura.foro.infra.security.config;
 
+import challenge.alura.foro.challenge.alura.foro.infra.security.filters.SecurityFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,8 +19,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfigurations {
 
+    @Autowired
+    private SecurityFilter securityFilter;
 
-//    ToDO cambiar la extension topics por login cuando se implemente la verificacion de acceso
+
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -28,22 +32,21 @@ public class SecurityConfigurations {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST,  "/topics").permitAll()
-                        .requestMatchers( HttpMethod.GET, "/topics").permitAll()
-                        .requestMatchers( HttpMethod.GET, "/topics/{id}").permitAll()
-                        .requestMatchers( HttpMethod.PUT, "/topics/{id}").permitAll()
-                        .requestMatchers( HttpMethod.DELETE, "/topics/{id}").permitAll()
+                        .requestMatchers(HttpMethod.POST,  "/login").permitAll()
                         .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+//                        .antMatchers(HttpMethod.DELETE, "/medicos").hasRole("ADMIN") Un posible acceso por rol
                         .anyRequest().authenticated()
-                );
+                )
+
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+        ;
 
         return http.build();
     }
 
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
-            throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
